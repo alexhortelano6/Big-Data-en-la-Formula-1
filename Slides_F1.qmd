@@ -1,0 +1,300 @@
+---
+title: "Big Data en la Formula 1" 
+date: 2022-12-23 #- ISO8601 YYYY-MM-DD format 
+author: Alejandro Hortelano, Victor Gallego y Jose Maria Perez
+date-format: short
+format: 
+  revealjs:
+    scrollable: true
+    slide-level: 2
+    height: 900
+    width: 1600
+    toc: false
+    center-title-slide: true
+    title-slide-attributes: #- atributos para la slide de titulo
+      data-background-color: "#440154"   #- color de R-ladies
+    preview-links: auto  #- true: abre un iframe en lugar de abrir ventana
+    link-external-newwindow: true
+    transition: fade
+    fontcolor: "#440154"
+    highlight-style: a11y
+    code-line-numbers: true
+    number-sections: false
+    slide-number: c/t  
+    incremental: false   
+footer: |
+  Slides hechas con [Quarto](https://quarto.org/) 
+#theme: moon
+---
+
+# Indice
+
+1. Contextualización
+
+2. Historia y curiosidades del campeonato
+
+3. Temporada 2021
+
+---
+
+## Datos del trabajo
+
+El dataset que hemos utilizado para realizar este trabajo está hecho a partir de [kaggle](https://www.kaggle.com) y más concretamente [aquí](https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020?resource=downloadhttps://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020?resource=download), junto a la base de datos [Statista](https://es.statista.com) para obtener los datos sobre las audiencias y el Prize Pool de las competiciones deportivas
+
+---
+
+## Código R utilizado en el trabajo 
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(gapminder)
+library(gganimate)
+library(stats)
+library(plotly)
+library(ggplot2)
+library(treemap)
+library(treemapify)
+library(magick)
+
+tiempos <- rio::import(file = "./datos/lap_times.csv")
+pilotos <- rio::import(file = "./datos/drivers.csv")
+resultados <- rio::import(file = "./datos/results.csv")
+carreras <- rio::import(file = "./datos/races.csv")
+escuderias <- rio::import(file = "./datos/constructors.csv")
+escuderias2 <- rio::import(file = "./datos/constructor_standings.csv")
+resultado_escuderias <- rio::import(file = "./datos/constructor_results.csv")
+circuitos <- rio::import(file = "./datos/circuits.csv")
+pit_stops <- read_csv("datos/pit_stops.csv")
+Prizepool_competiciones <- read_excel("datos/valor_eventos.xlsx")
+Prizepool_competiciones <- na.omit(Prizepool_competiciones)
+Valor_marcas <- read_excel("datos/valor_marcas.xlsx")
+audiencias <- read_excel("datos/audiencias.xlsx")
+pitstops <- rio::import(file= "./datos/pit_stops.csv")
+```
+
+---
+
+## Contextualización del campeonato
+
+1. Audiencias del cameponato
+
+2. Comparación con las principales competencias deportivas
+
+3. Elementos principales del vehículo
+
+4. Introducción de las escuderías y pilotos
+
+---
+
+## Audiencias del cameponato
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+g <- crosstalk::SharedData$new(audiencias)
+grafico_audiencias <- ggplot(g, aes(x=year, y=numero_espectadores, frame = year)) +
+        geom_point() + 
+        labs(title = "Evolución del número de espectadores por año",
+             subtitle = "Desde el 2004 hasta el 2020",
+             x = "Años",
+             y = "Número total de espectadores") +
+        scale_x_log10() +scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
+grafico_audiencias <- ggplotly(grafico_audiencias) %>% highlight("plotly_hover")
+
+grafico_audiencias
+```
+
+---
+
+## Comparación de las principales competencias deportivas
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+Prizepool_competiciones <- Prizepool_competiciones %>% mutate(Competiciones = forcats::as_factor(Competiciones))
+Prizepool_competiciones <- Prizepool_competiciones %>% mutate(Competiciones = forcats::fct_rev(Competiciones))
+
+grafico_eventos <- ggplot(Prizepool_competiciones) +
+        aes(x = Competiciones, weight = Dinero) +
+        geom_bar(fill = "#440154") +
+        labs(
+                x = "Competiciones",
+                y = "Dinero (expresado en millones de dólares)",
+                title = "Prize pool ",
+                subtitle = "De las principales competiciones deportivas"
+        ) + 
+        coord_flip() +
+        theme_classic()
+
+grafico_eventos
+
+```
+
+---
+
+## Elementos principales del vehículo
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+faps <- image_read("./imagenes/faps.jpg") %>% image_scale(.,"700")
+halo <- image_read("./imagenes/halo.jpg") %>% image_scale(.,"700")
+morro <- image_read("./imagenes/morro.png") %>% image_scale(.,"700")
+motor <- image_read("./imagenes/motor.jpg") %>% image_scale(.,"700")
+volante <- image_read("./imagenes/volante.jpg") %>% image_scale(.,"700")
+partes_del_coche <- c(faps,halo,morro,motor,volante)
+image_animate(image_scale(partes_del_coche), fps = 0.5)
+```
+
+---
+
+## Introducción de las escuderías y pilotos
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+grafico_valor_escuderías <- ggplot(Valor_marcas, aes(area = Dinero, fill = Marcas,
+                                                     label = Marcas)) +
+        geom_treemap() +
+        geom_treemap_text(colour = "black",
+                          place = "centre",
+                          size = 15) +
+        scale_fill_brewer() +
+        labs(title = "Valor económico de las marcas",
+             subtitle = "Expresado en millones de dólares",
+             
+             )
+
+grafico_valor_escuderías
+```
+
+---
+
+## Introducción de las escuderías y pilotos
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+df_escuderias_agrupadas <- escuderias %>% group_by(nationality) %>% summarise(NN=n()) %>%
+        slice_max(NN, n=4)
+
+
+grafico_escuderias_por_paises <- ggplot(df_escuderias_agrupadas) +
+        aes(x = NN, color = nationality,weight = NN) +
+        geom_bar(fill = "#440154") +
+        scale_color_hue(direction = 1) +
+        labs(title = "Escuderías agrupadas por nacionalidades en la historia",
+             subtitle = "Escogidas las 4 con mayor cantidad",
+             x = "Número total de nacionalidades",
+             y = "Número total de nacionalidades") +
+        theme_minimal() + coord_polar()
+
+grafico_escuderias_por_paises
+```
+
+---
+
+## Historia y curiosidades del campeonato
+
+Pilotos más exitosos de la historia
+
+Mejores Pit-Stops en la historia del campeonato
+
+--- 
+
+## Pilotos más exitosos en la historia
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+mayores_victorias <- full_join(pilotos, resultados, c("driverId" = "driverId")) %>% 
+        full_join(., carreras, c("raceId" = "raceId")) %>% 
+        select(driverId, driverRef, position, year, date) %>% 
+        filter(position == 1) %>% 
+        group_by(driverRef) %>% 
+        mutate(victoria_num = sum( NN = n())) %>% 
+        filter(victoria_num >= 25) %>% 
+        arrange(victoria_num) %>% 
+        mutate( suma_vic = cumsum(position))%>%
+        arrange(desc(victoria_num))%>%
+        distinct(victoria_num)
+mayores_victorias
+
+G_victorias <- ggplot(mayores_victorias) +
+        aes(x = reorder(driverRef, desc(victoria_num)), y = victoria_num) +
+        geom_col(fill = "#622072") +
+        labs(
+                x = "Pilotos",
+                y = "Nº Victorias",
+                title = "Pilotos con más victorias"
+        ) +
+        coord_flip() +
+        ggthemes::theme_par()+
+        geom_text(aes(label=victoria_num), vjust=0.25,hjust=0.99, color="white",    
+                  position = position_dodge(0.1),  size=5.0
+        )
+G_victorias
+```
+
+--- 
+
+## Mejores Pit-Stops en la historia del campeonato
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+mejores_pitstops <- full_join(pilotos, pitstops, c("driverId" = "driverId")) %>% 
+        full_join(., carreras, c("raceId" = "raceId")) %>% 
+        select(driverRef, milliseconds) %>% 
+        slice_min(milliseconds, n = 10)
+mejores_pitstops
+
+mejores_pitstops <- mejores_pitstops %>% mutate(milliseconds = forcats::as_factor(milliseconds))
+mejores_pitstops <- mejores_pitstops %>% mutate(milliseconds = forcats::fct_rev(milliseconds))
+
+G_pitstops <- ggplot(mejores_pitstops) +
+        aes(x = driverRef, y = milliseconds) +
+        geom_tile(size = 1.2) +
+        labs(
+                x = "-",
+                y = "milisegundos",
+                title = "10 Pit stops mas rápidos",
+                subtitle = "Desde entrada a Pit-line hasta salida"
+        ) +
+        coord_flip() +
+        ggthemes::theme_base()
+G_pitstops
+
+```
+
+---
+
+## Constructores Temporada 2021
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+constructores <- data.frame(
+        "posicion" = c(1,2,3,4,5,6,7,8,9,10),
+        "escuderia" = c("Mercedes", "Red Bull", "Ferrari", "Mclaren", "Alpine", "AlphaTauri", "Aston Martin", "Williams", "Alfa Romeo", "Haas"),
+        "puntos" = c(613.5,585.5,323.5,275,155,142,77,23,13,0))
+
+
+grafico_jose_constructores <- ggplot(constructores) +
+        aes(x = reorder(escuderia, desc(puntos)), y = puntos) +
+        geom_col(fill = "#440154") +
+        labs(x = "Escudería", 
+             y = "Puntos", title = "Campeonato de Constructores", subtitle = "Escuderías 2021") +
+        theme_minimal() +
+        theme(plot.title = element_text(size = 16L, hjust = 0.5), plot.subtitle = element_text(size = 13L, 
+                                                                                               hjust = 0.5))+
+        geom_text(aes(label=puntos), vjust=0.99,hjust=0.49, color="white",    
+                  position = position_dodge(0.1),  size=4.0
+        )
+grafico_jose_constructores
+```
+
+---
+
+## Pilotos
+```{r, echo = FALSE, message = FALSE, warning = FALSE, results = TRUE}
+piloto <- c("Verstappen", "Hamilton", "Leclerc", "Sainz", "Bottas", "Alonso", "Pérez", "Ocon", "Norris", "Ricciardo", "Gasly", "Tsunoda", "Vettel", "Stroll", "Latifi", "Russell", "Mazepin", "Schumacher", "Giovinazzi", "Raikkonen")
+puntos <- c(395.5,387.5, 159, 164.5,226,81,190,74,160,115,110,32,43,34,7,16,0,0,3,10)
+data <- data.frame(puntos, piloto)
+
+grafico_jose_pilotos <- ggplot(data) +
+        aes(x = reorder(piloto, desc(puntos)), y = puntos) +
+        geom_col(fill = "#440154") +
+        labs(x = "Pilotos", y = "Puntos", 
+             title = "Campeonato de Pilotos") +
+        theme_minimal() +
+        theme(plot.title = element_text(size = 16L, 
+                                        face = "bold", hjust = 0.5), axis.title.y = element_text(size = 12L, face = "bold"), axis.title.x = element_text(size = 12L, 
+                                                                                                                                                         face = "bold"))+
+        geom_text(aes(label=puntos), vjust=0.99,hjust=0.49, color="white",    
+                  position = position_dodge(0.1),  size=4.0)
+
+grafico_jose_pilotos
+```
+
+---
