@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Big Data en la Formula 1",
+    "section": "",
+    "text": "Hola, somos Alejandro Hortelano, Victor Gallego y Jose Maria Pérez\nEsta web la utilizaremos para presentar el trabajo colectivo final de la asignatura “Programación y Manejo de datos en la era del Big Data”, optativa del 4º curso del grado de Economía de la Universidad de Valencia\nLa web de la asignatura puede verse aquí y los trabajos de mis compañeros de curso puedes verlos aquí.\nHemos decidido ponerle de título a este trabajo : “Big Data en la Fórmula 1”. Cuya premisa ha sido el análisis de los diferentes datos relacionados con esta competición deportiva, utilizando las herramientas vistas en clase.\nEl trabajo puede verse aquí"
+  },
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code.\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "Welcome To My Blog",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this blog"
+  }
+]
