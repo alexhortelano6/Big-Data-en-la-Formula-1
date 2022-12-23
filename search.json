@@ -1,0 +1,142 @@
+[
+  {
+    "objectID": "posts/post-with-code/index.html",
+    "href": "posts/post-with-code/index.html",
+    "title": "Post With Code",
+    "section": "",
+    "text": "This is a post with executable code.\n\n\nCódigo\n1 + 1\n\n\n[1] 2\n\n\n\n\n\nReutilizaciónhttps://creativecommons.org/licenses/by/4.0/deed.es"
+  },
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "Welcome To My Blog",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts.\n\n\n\nReutilizaciónhttps://creativecommons.org/licenses/by/4.0/deed.es"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Big Data en la Formula 1",
+    "section": "",
+    "text": "Hola, somos Alejandro Hortelano, Victor Gallego y Jose Maria Pérez\nEsta web la utilizaremos para presentar el trabajo colectivo final de la asignatura “Programación y Manejo de datos en la era del Big Data”, optativa del 4º curso del grado de Economía de la Universidad de Valencia\nLa web de la asignatura puede verse aquí y los trabajos de mis compañeros de curso puedes verlos aquí.\nHemos decidido ponerle de título a este trabajo : “Big Data en la Fórmula 1”. Cuya premisa ha sido el análisis de los diferentes datos relacionados con esta competición deportiva, utilizando las herramientas vistas en clase.\nEl trabajo puede verse aquí\n\n\nReutilizaciónhttps://creativecommons.org/licenses/by/4.0/deed.es"
+  },
+  {
+    "objectID": "trabajo_F1.html",
+    "href": "trabajo_F1.html",
+    "title": "Big Data en la Formula 1",
+    "section": "",
+    "text": "El siguiente trabajo se va a estructurar de la siguiente forma:\n\nEn primer lugar, vamos a realizar una contextualización del campeonato y de sus distintos elementos, mediante diferentes gráficos que hemos realizado utilizando el programa Rstudio. Queriendo enfocar principalmente vuestra atención en las distintas audiencias y su evolución en los últimos años, comparaciones con otras competiciones deportivas de distinta modalidad, las escuderías y pilotos que conforman y han conformado las parrillas a lo largo de la historia…\nEn segundo lugar, procederemos a explicar la evolución de la Fórmula 1 a lo largo de su historia a través de gráficos donde compararemos victorias por pilotos y explicaremos la relevancia que estos han tenido para la competición a lo largo de los años, así como los pit-stops más rápidos hasta la actualidad.\nEn tercer lugar, hemos querido dedicar la última parte a explicar la temporada 2021 y la fuerte competición entre los dos pilotos más destacados."
+  },
+  {
+    "objectID": "trabajo_F1.html#código-r-del-trabajo",
+    "href": "trabajo_F1.html#código-r-del-trabajo",
+    "title": "Big Data en la Formula 1",
+    "section": "Código R del trabajo",
+    "text": "Código R del trabajo\n\nCódigo\n#A continuación vamos a poner todas las librerías que hemos necesitado\n\nlibrary(tidyverse)\nlibrary(readxl)\nlibrary(gapminder)\nlibrary(gganimate)\nlibrary(stats)\nlibrary(plotly)\nlibrary(ggplot2)\nlibrary(treemap)\nlibrary(treemapify)\nlibrary(magick)\n\n#Mediante este código cargamos todos los dataset\n\ntiempos <- rio::import(file = \"./datos/lap_times.csv\")\npilotos <- rio::import(file = \"./datos/drivers.csv\")\nresultados <- rio::import(file = \"./datos/results.csv\")\ncarreras <- rio::import(file = \"./datos/races.csv\")\nescuderias <- rio::import(file = \"./datos/constructors.csv\")\nescuderias2 <- rio::import(file = \"./datos/constructor_standings.csv\")\nresultado_escuderias <- rio::import(file = \"./datos/constructor_results.csv\")\ncircuitos <- rio::import(file = \"./datos/circuits.csv\")\npit_stops <- read_csv(\"datos/pit_stops.csv\")\nPrizepool_competiciones <- read_excel(\"datos/valor_eventos.xlsx\")\nPrizepool_competiciones <- na.omit(Prizepool_competiciones)\nValor_marcas <- read_excel(\"datos/valor_marcas.xlsx\")\naudiencias <- read_excel(\"datos/audiencias.xlsx\")\npitstops <- rio::import(file= \"./datos/pit_stops.csv\")"
+  },
+  {
+    "objectID": "trabajo_F1.html#pilotos-más-exitosos-en-la-historia",
+    "href": "trabajo_F1.html#pilotos-más-exitosos-en-la-historia",
+    "title": "Big Data en la Formula 1",
+    "section": "Pilotos más exitosos en la historia",
+    "text": "Pilotos más exitosos en la historia\nDesde 1950 hasta 2022 han competido 856 pilotos en 214 equipos distintos en la categoría. De estos pilotos tan solo 113 se han convertido en ganadores de un Gran Premio.\nNos planteamos en este apartado cuáles han sido “los mejores” de estos 113 afortunados de modo que nos podamos hacer una idea de los dominadores de la categoría.\nAntes de hablar de los resultados cabe destacar la gran diferencia entre el calendario de carreras actual del de hace años atrás y cómo esto puede afectar en los resultados pues el calendario actual está formado por 22 carreras, calendario que ha seguido una tendencia ascendente en sus citas pues en 2010 consistía de 19 carreras, 17 en el año 2000, 14 en 1980, etc. Mientras que para esta próxima temporada se pretendían hacer 25. Esto cabe destacar debido a que aquellos pilotos con el coche ganador de las respectivas temporadas pudieron acumular un mayor o menor número de victorias según el vigente calendario.\n\nCódigomayores_victorias <- full_join(pilotos, resultados, c(\"driverId\" = \"driverId\")) %>% \n        full_join(., carreras, c(\"raceId\" = \"raceId\")) %>% \n        select(driverId, driverRef, position, year, date) %>% \n        filter(position == 1) %>% \n        group_by(driverRef) %>% \n        mutate(victoria_num = sum( NN = n())) %>% \n        filter(victoria_num >= 25) %>% \n        arrange(victoria_num) %>% \n        mutate( suma_vic = cumsum(position))%>%\n        arrange(desc(victoria_num))%>%\n        distinct(victoria_num)\nmayores_victorias\n#> # A tibble: 11 × 2\n#> # Groups:   driverRef [11]\n#>    driverRef          victoria_num\n#>    <chr>                     <int>\n#>  1 hamilton                    103\n#>  2 michael_schumacher           91\n#>  3 vettel                       53\n#>  4 prost                        51\n#>  5 senna                        41\n#>  6 max_verstappen               35\n#>  7 alonso                       32\n#>  8 mansell                      31\n#>  9 stewart                      27\n#> 10 lauda                        25\n#> 11 clark                        25\n\nG_victorias <- ggplot(mayores_victorias) +\n        aes(x = reorder(driverRef, desc(victoria_num)), y = victoria_num) +\n        geom_col(fill = \"#622072\") +\n        labs(\n                x = \"Pilotos\",\n                y = \"Nº Victorias\",\n                title = \"Pilotos con más victorias\"\n        ) +\n        coord_flip() +\n        ggthemes::theme_par()+\n        geom_text(aes(label=victoria_num), vjust=0.25,hjust=0.99, color=\"white\",    \n                  position = position_dodge(0.1),  size=5.0\n        )\nG_victorias\n\n\n#Pilotos con al menos 1 victoria\n\nunavictoria <- full_join(pilotos, resultados, c(\"driverId\" = \"driverId\")) %>% \n        full_join(., carreras, c(\"raceId\" = \"raceId\")) %>% \n        select(driverId, driverRef, position, year, date) %>% \n        filter(position == 1) %>%\n        distinct(driverId)\nunavictoria\n#>     driverId\n#> 1          1\n#> 2          3\n#> 3          4\n#> 4          5\n#> 5          8\n#> 6          9\n#> 7         13\n#> 8         14\n#> 9         15\n#> 10        17\n#> 11        18\n#> 12        20\n#> 13        21\n#> 14        22\n#> 15        23\n#> 16        30\n#> 17        31\n#> 18        35\n#> 19        44\n#> 20        49\n#> 21        55\n#> 22        56\n#> 23        57\n#> 24        65\n#> 25        71\n#> 26        77\n#> 27        95\n#> 28       102\n#> 29       105\n#> 30       117\n#> 31       119\n#> 32       123\n#> 33       137\n#> 34       145\n#> 35       163\n#> 36       172\n#> 37       173\n#> 38       175\n#> 39       177\n#> 40       178\n#> 41       182\n#> 42       187\n#> 43       199\n#> 44       200\n#> 45       202\n#> 46       203\n#> 47       207\n#> 48       219\n#> 49       221\n#> 50       222\n#> 51       223\n#> 52       224\n#> 53       230\n#> 54       231\n#> 55       235\n#> 56       238\n#> 57       250\n#> 58       255\n#> 59       289\n#> 60       304\n#> 61       306\n#> 62       309\n#> 63       320\n#> 64       327\n#> 65       328\n#> 66       341\n#> 67       345\n#> 68       346\n#> 69       347\n#> 70       356\n#> 71       358\n#> 72       360\n#> 73       364\n#> 74       373\n#> 75       375\n#> 76       385\n#> 77       386\n#> 78       394\n#> 79       403\n#> 80       404\n#> 81       427\n#> 82       449\n#> 83       842\n#> 84       475\n#> 85       476\n#> 86       479\n#> 87       498\n#> 88       509\n#> 89       525\n#> 90       526\n#> 91       559\n#> 92       577\n#> 93       578\n#> 94       579\n#> 95       581\n#> 96       593\n#> 97       611\n#> 98       628\n#> 99       641\n#> 100      642\n#> 101      647\n#> 102      657\n#> 103      766\n#> 104      786\n#> 105      813\n#> 106      815\n#> 107      817\n#> 108      822\n#> 109      830\n#> 110      832\n#> 111      839\n#> 112      844\n#> 113      847\n\n\n\n\n\n\n\nEn los resultados obtenidos no encontramos sorpresas pues en primera posición encontramos a Lewis Hamilton (7 títulos) con 103 victorias, gran beneficiario de la “era híbrida” cosechando entre 2014 y 2021 6 títulos mundiales (Mercedes-AMG) de los 7 posibles más su título de 2008 con Mclaren-Mercedes, racha que sólo fue cortada por su compañero de equipo Rosberg en 2016 y en el final de la era híbrida por Verstappen.\nEn segunda posición y tras ser desbancado de la primera en la temporada 2021 nos encontramos a Michael Schumacher con 91 victorias (7 títulos), leyenda de la Fórmula 1 y mayor racha de títulos seguidos ganados. Ganó dos mundiales seguidos en 1994 y 1995 con el equipo Benetton tras lo que se marchó a Ferrari donde al fin en el año 2000 se alzó con el tercero, racha que continuó hasta 2004 con una aplastante superioridad con 5 títulos consecutivos. No sería otro que Fernando Alonso en 2005 con el Renault R25 quien logró parar la racha del “Káiser”.\nEn tercera posición nos encontramos a Sebastian Vettel con 53 victorias y 4 títulos con Red-Bull Racing. Vettel, primer gran éxito del programa de jóvenes pilotos de redbull logró sus 4 títulos de forma consecutiva entre 2010 y 2013 con un coche dominador gracias a los diseños de Adrian Newey. En especial recordamos estos años aquí dado que fue en 2010 y 2013, especialmente esta última y las desesperantes vueltas detrás de Petrov, mundiales que se esfumaron para Fernando en la última carrera compitiendo con Sebastian.\nEn cuarta posición encontramos a Alain Prost con 53 victorias y 4 títulos cosechados, gran rival de Ayrton Senna la cual llevaron hasta decidir los títulos del 89 y 90 con choques entre ellos en la última carrera , se alzó con los títulos de 1985,1986 (Marlboro McLaren), 1989(Mclaren-Honda) y 1993 (Williams-Renault).\nEn quinto lugar con 41 victorias encontramos a la leyenda brasileña del deporte Ayrton Senna con 3 títulos, 1988,1990 y 1991(Mclaren-Honda), alabado por todos por su forma de conducir y que le llevaría a fallecer en carrera el 1 de mayo de 1994 en el GP de Imola con 34 años al salirse de pista e impactar con un muro a 300 km/h, en una época donde la seguridad de los monoplazas era cuestionable.\nEn sexto lugar con 35 victorias encontramos a Max Verstappen, vigente campeón con 2 títulos consecutivos junto al equipo Red-Bull. Logró frenar la arrolladora racha del equipo Mercedes-AMG tras una emocionante temporada de 2021 que trataremos más tarde donde el título se decidió en la última vuelta.\nEl séptimo y último que destacaremos (por motivos nada personales) encontramos a Fernando Alonso(“el Nano”) con 32 victorias y 2 títulos (que bien podrían ser 3 de no ser por el fatal final de 2013) cosechados en 2005 y 2006 con el equipo Renault con el que logró frenar la racha de Ferrari y Schumacher. Como curiosidad vemos que hay visibles paralelismos con la historia actual de Verstappen, al proclamarse ambos campeones por primera vez con 24 años frente a un dominador 7 veces campeón del mundo de 36 años y una racha de 2 títulos seguidos."
+  },
+  {
+    "objectID": "trabajo_F1.html#mejores-pit-stops-en-la-historia-del-campeonato",
+    "href": "trabajo_F1.html#mejores-pit-stops-en-la-historia-del-campeonato",
+    "title": "Big Data en la Formula 1",
+    "section": "Mejores Pit-Stops en la historia del campeonato",
+    "text": "Mejores Pit-Stops en la historia del campeonato\nLos pit-stop consisten en las paradas que hacen en carrera los pilotos en “boxes” para cambiar ruedas o bien repostar(hasta 2009).\nPara este Top-10 hemos extraído los datos del proceso completo de la parada, es decir, desde su entrada en el pit-lane hasta su salida y reincorporación a pista. Esto plantea unas diferencias entre circuitos y épocas debido a que no todos los pit-lane son igual de largos, ni su velocidad media es la misma (debido a que se baja si son más estrechos), así como que hasta la temporada 2009 estaban permitidos los repostajes por los que aumentan el tiempo total.\nPara hacernos una idea de la magnitud de estas cifras, la media actual de las paradas en Boxes si todo sale bien es de unos 24 segundos.\n\nCódigomejores_pitstops <- full_join(pilotos, pitstops, c(\"driverId\" = \"driverId\")) %>% \n        full_join(., carreras, c(\"raceId\" = \"raceId\")) %>% \n        select(driverRef, milliseconds) %>% \n        slice_min(milliseconds, n = 10)\nmejores_pitstops\n#>             driverRef milliseconds\n#> 1           maldonado        12897\n#> 2         bruno_senna        12959\n#> 3            hamilton        13173\n#> 4           maldonado        13186\n#> 5  michael_schumacher        13199\n#> 6               perez        13201\n#> 7           maldonado        13206\n#> 8               massa        13259\n#> 9           maldonado        13266\n#> 10             vettel        13335\n\nmejores_pitstops <- mejores_pitstops %>% mutate(milliseconds = forcats::as_factor(milliseconds))\nmejores_pitstops <- mejores_pitstops %>% mutate(milliseconds = forcats::fct_rev(milliseconds))\n\nG_pitstops <- ggplot(mejores_pitstops) +\n        aes(x = driverRef, y = milliseconds) +\n        geom_tile(size = 1.2) +\n        labs(\n                x = \"-\",\n                y = \"milisegundos\",\n                title = \"10 Pit stops mas rápidos\",\n                subtitle = \"Desde entrada a Pit-line hasta salida\"\n        ) +\n        coord_flip() +\n        ggthemes::theme_base()\nG_pitstops\n\n\n\n\n\n\n\nRespecto de los datos evidencian lo comentado anteriormente y nos encontramos a los 2 mismos circuitos en las 6 primeras posiciones, siendo en primera posición a Pastor Maldonado con un tiempo de 12.897 segundos en el GP de Abu Dhabi 2011, siendo la segunda marca también en el mismo GP por parte de Bruno Senna con 12.959 segundos.\nLa tercera mejor marca la encontramos en el GP de Hungría de 2011 por parte de Lewis Hamilton con 13.173 segundos, en cuarta posición en el mismo GP encontramos de nuevo a Maldonado con 13.186 segundos\nEn quinta y sexta posición y últimas que destacaremos encontramos el GP de Hungría de 2012 a Michael Schumacher con 12.199 segundos y de nuevo el GP de Hungría 2011 a Sergio Pérez con 13.201 segundos."
+  },
+  {
+    "objectID": "Slides_F1.html#datos-del-trabajo",
+    "href": "Slides_F1.html#datos-del-trabajo",
+    "title": "Big Data en la Formula 1",
+    "section": "Datos del trabajo",
+    "text": "Datos del trabajo\nEl dataset que hemos utilizado para realizar este trabajo está hecho a partir de kaggle y más concretamente aquí, junto a la base de datos Statista para obtener los datos sobre las audiencias y el Prize Pool de las competiciones deportivas"
+  },
+  {
+    "objectID": "Slides_F1.html#código-r-utilizado-en-el-trabajo",
+    "href": "Slides_F1.html#código-r-utilizado-en-el-trabajo",
+    "title": "Big Data en la Formula 1",
+    "section": "Código R utilizado en el trabajo",
+    "text": "Código R utilizado en el trabajo\n\nlibrary(tidyverse)\nlibrary(readxl)\nlibrary(gapminder)\nlibrary(gganimate)\nlibrary(stats)\nlibrary(plotly)\nlibrary(ggplot2)\nlibrary(treemap)\nlibrary(treemapify)\nlibrary(magick)\n\ntiempos <- rio::import(file = \"./datos/lap_times.csv\")\npilotos <- rio::import(file = \"./datos/drivers.csv\")\nresultados <- rio::import(file = \"./datos/results.csv\")\ncarreras <- rio::import(file = \"./datos/races.csv\")\nescuderias <- rio::import(file = \"./datos/constructors.csv\")\nescuderias2 <- rio::import(file = \"./datos/constructor_standings.csv\")\nresultado_escuderias <- rio::import(file = \"./datos/constructor_results.csv\")\ncircuitos <- rio::import(file = \"./datos/circuits.csv\")\npit_stops <- read_csv(\"datos/pit_stops.csv\")\nPrizepool_competiciones <- read_excel(\"datos/valor_eventos.xlsx\")\nPrizepool_competiciones <- na.omit(Prizepool_competiciones)\nValor_marcas <- read_excel(\"datos/valor_marcas.xlsx\")\naudiencias <- read_excel(\"datos/audiencias.xlsx\")\npitstops <- rio::import(file= \"./datos/pit_stops.csv\")"
+  },
+  {
+    "objectID": "Slides_F1.html#contextualización-del-campeonato",
+    "href": "Slides_F1.html#contextualización-del-campeonato",
+    "title": "Big Data en la Formula 1",
+    "section": "Contextualización del campeonato",
+    "text": "Contextualización del campeonato\n\nAudiencias del cameponato\nComparación con las principales competencias deportivas\nElementos principales del vehículo\nIntroducción de las escuderías y pilotos"
+  },
+  {
+    "objectID": "Slides_F1.html#audiencias-del-cameponato",
+    "href": "Slides_F1.html#audiencias-del-cameponato",
+    "title": "Big Data en la Formula 1",
+    "section": "Audiencias del cameponato",
+    "text": "Audiencias del cameponato"
+  },
+  {
+    "objectID": "Slides_F1.html#comparación-de-las-principales-competencias-deportivas",
+    "href": "Slides_F1.html#comparación-de-las-principales-competencias-deportivas",
+    "title": "Big Data en la Formula 1",
+    "section": "Comparación de las principales competencias deportivas",
+    "text": "Comparación de las principales competencias deportivas"
+  },
+  {
+    "objectID": "Slides_F1.html#elementos-principales-del-vehículo",
+    "href": "Slides_F1.html#elementos-principales-del-vehículo",
+    "title": "Big Data en la Formula 1",
+    "section": "Elementos principales del vehículo",
+    "text": "Elementos principales del vehículo"
+  },
+  {
+    "objectID": "Slides_F1.html#introducción-de-las-escuderías-y-pilotos",
+    "href": "Slides_F1.html#introducción-de-las-escuderías-y-pilotos",
+    "title": "Big Data en la Formula 1",
+    "section": "Introducción de las escuderías y pilotos",
+    "text": "Introducción de las escuderías y pilotos"
+  },
+  {
+    "objectID": "Slides_F1.html#introducción-de-las-escuderías-y-pilotos-1",
+    "href": "Slides_F1.html#introducción-de-las-escuderías-y-pilotos-1",
+    "title": "Big Data en la Formula 1",
+    "section": "Introducción de las escuderías y pilotos",
+    "text": "Introducción de las escuderías y pilotos"
+  },
+  {
+    "objectID": "Slides_F1.html#historia-y-curiosidades-del-campeonato",
+    "href": "Slides_F1.html#historia-y-curiosidades-del-campeonato",
+    "title": "Big Data en la Formula 1",
+    "section": "Historia y curiosidades del campeonato",
+    "text": "Historia y curiosidades del campeonato\nPilotos más exitosos de la historia\nMejores Pit-Stops en la historia del campeonato"
+  },
+  {
+    "objectID": "Slides_F1.html#pilotos-más-exitosos-en-la-historia",
+    "href": "Slides_F1.html#pilotos-más-exitosos-en-la-historia",
+    "title": "Big Data en la Formula 1",
+    "section": "Pilotos más exitosos en la historia",
+    "text": "Pilotos más exitosos en la historia\n\n#> # A tibble: 11 × 2\n#> # Groups:   driverRef [11]\n#>    driverRef          victoria_num\n#>    <chr>                     <int>\n#>  1 hamilton                    103\n#>  2 michael_schumacher           91\n#>  3 vettel                       53\n#>  4 prost                        51\n#>  5 senna                        41\n#>  6 max_verstappen               35\n#>  7 alonso                       32\n#>  8 mansell                      31\n#>  9 stewart                      27\n#> 10 lauda                        25\n#> 11 clark                        25"
+  },
+  {
+    "objectID": "Slides_F1.html#mejores-pit-stops-en-la-historia-del-campeonato",
+    "href": "Slides_F1.html#mejores-pit-stops-en-la-historia-del-campeonato",
+    "title": "Big Data en la Formula 1",
+    "section": "Mejores Pit-Stops en la historia del campeonato",
+    "text": "Mejores Pit-Stops en la historia del campeonato\n\n#>             driverRef milliseconds\n#> 1           maldonado        12897\n#> 2         bruno_senna        12959\n#> 3            hamilton        13173\n#> 4           maldonado        13186\n#> 5  michael_schumacher        13199\n#> 6               perez        13201\n#> 7           maldonado        13206\n#> 8               massa        13259\n#> 9           maldonado        13266\n#> 10             vettel        13335"
+  },
+  {
+    "objectID": "Slides_F1.html#constructores-temporada-2021",
+    "href": "Slides_F1.html#constructores-temporada-2021",
+    "title": "Big Data en la Formula 1",
+    "section": "Constructores Temporada 2021",
+    "text": "Constructores Temporada 2021"
+  },
+  {
+    "objectID": "Slides_F1.html#pilotos",
+    "href": "Slides_F1.html#pilotos",
+    "title": "Big Data en la Formula 1",
+    "section": "Pilotos",
+    "text": "Pilotos"
+  }
+]
